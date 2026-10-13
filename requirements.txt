@@ -1,0 +1,14 @@
+# Manipulation des données
+numpy
+pandas
+
+# Visualisation
+matplotlib
+seaborn
+
+# Machine Learning classique
+scikit-learn
+xgboost
+
+# Notebooks Jupyter dans VS Code
+ipykernel
