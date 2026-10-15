@@ -59,3 +59,31 @@ def nettoyer_raca(brut):
     df.loc[ancienne_techno, COLONNES_RADIO] = np.nan
 
     return df
+
+
+# Rééchantillonnage : colonnes moyennées et colonnes dont on garde la première valeur
+MESURES = ["Longitude", "Latitude", "Speed", "RSRP", "RSRQ", "SNR", "CQI", "RSSI",
+           "NRxRSRP", "NRxRSRQ", "DL_bitrate", "UL_bitrate"]
+INFOS = ["NetworkMode", "generation", "CellID", "State", "application", "mobilite"]
+
+
+def reechantillonner_raca(propre):
+    """Construit une grille régulière d'une ligne par seconde pour chaque trace.
+
+    - plusieurs mesures dans la même seconde : moyenne (MESURES) ou première valeur (INFOS) ;
+    - seconde sans mesure : on recopie la mesure précédente, au plus 2 secondes d'affilée ;
+    - la colonne seconde_completee indique les lignes recopiées.
+    """
+    resultats = []
+    for nom, trace in propre.groupby("trace"):
+        par_seconde = trace.set_index("temps").resample("1s")
+        df = pd.concat([par_seconde[MESURES].mean(), par_seconde[INFOS].first()], axis=1)
+
+        manquante = par_seconde.size() == 0       # secondes sans aucune mesure
+        recopie = df.ffill(limit=2)               # valeur précédente, 2 fois au plus
+        df[manquante] = recopie[manquante]        # on ne remplit QUE les secondes manquantes
+
+        df["seconde_completee"] = manquante
+        df["trace"] = nom
+        resultats.append(df.reset_index())
+    return pd.concat(resultats, ignore_index=True)
