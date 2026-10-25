@@ -12,7 +12,7 @@ Auteur : ABOUBAKAR SIDIKI
 Étudier comment les techniques d'intelligence artificielle peuvent exploiter les données des réseaux 5G/6G pour :
 
 1. **Prédire des indicateurs de performance (KPI)** — par exemple le débit descendant à court terme à partir des mesures radio (RSRP, RSRQ, SINR, CQI…).
-2. **Détecter des comportements anormaux** — par exemple des attaques (DoS, scans de ports) dans le trafic d'un réseau 5G.
+2. **Détecter des pannes et des dysfonctionnements du réseau** — par exemple les échecs de service (page web, vidéo, ping) qui ne s'expliquent pas par les conditions radio.
 
 Les deux tâches sont traitées à part égale, et les différentes approches sont **comparées** selon la précision, la capacité de détection, le temps d'apprentissage et les ressources nécessaires.
 
@@ -21,7 +21,7 @@ Les deux tâches sont traitées à part égale, et les différentes approches so
 | Tâche | Jeu de données | Contenu | Source |
 |---|---|---|---|
 | Prédiction de KPI | 5G dataset — Raca et al. (MMSys 2020) | Mesures réelles d'un opérateur 5G irlandais : KPI radio, contexte, cellule, débit | [University College Cork](https://cora.ucc.ie/handle/10468/9826) |
-| Détection d'anomalies | 5G-NIDD (Université d'Oulu) | Trafic réseau 5G étiqueté : normal, DoS, scans de ports | [IEEE DataPort](https://ieee-dataport.org/node/10203) |
+| Détection de dysfonctionnements | QoS ARCEP — campagne « Mon réseau mobile » 2025 | 354 282 tests réels sur les 4 opérateurs français (web, vidéo, ping, transferts), avec résultat et conditions radio | [data.arcep.fr](https://data.arcep.fr/mobile/mesures_qualite_arcep/index.html) |
 
 Les données ne sont **pas** incluses dans ce dépôt (taille et licences). Les instructions de téléchargement se trouvent dans [`docs/`](docs/).
 
@@ -30,7 +30,7 @@ Les données ne sont **pas** incluses dans ce dépôt (taille et licences). Les 
 | Famille | Modèles |
 |---|---|
 | Machine Learning classique (références) | Régression linéaire, arbre de décision, Random Forest, XGBoost, Isolation Forest |
-| Deep Learning | MLP, LSTM, GRU, Transformer pour séries temporelles |
+| Deep Learning | MLP, LSTM, GRU, modèles hybrides CNN-LSTM / LSTM-CNN, Transformer pour séries temporelles |
 | Pistes exploratoires | Reinforcement Learning, Transfer Learning, Federated Learning, IA explicable (XAI) |
 
 **Métriques** — prédiction : MAE, RMSE, R² ; détection : précision, rappel, F1-score, matrice de confusion ; coût : temps d'apprentissage et d'inférence.
@@ -63,7 +63,7 @@ Les modèles de Deep Learning sont entraînés sur **Google Colab**.
 ## Avancement
 
 - [x] Semaine 1 — Cadrage, mise en place du dépôt, choix des données
-- [ ] Semaine 2 — Exploration et préparation des données
+- [x] Semaine 2 — Exploration et préparation des données
 - [ ] Semaine 3 — Modèles de Machine Learning classiques
 - [ ] Semaine 4 — MLP
 - [ ] Semaine 5 — LSTM et GRU
