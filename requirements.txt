@@ -1,6 +1,7 @@
 # Manipulation des données
 numpy
 pandas
+openpyxl
 
 # Visualisation
 matplotlib

@@ -88,28 +88,40 @@ def reechantillonner_raca(propre):
         resultats.append(df.reset_index())
     return pd.concat(resultats, ignore_index=True)
 
-    # ---------------------------------------------------------------- ARCEP
+   # ---------------------------------------------------------------- ARCEP
 DOSSIER_ARCEP = RACINE_DEPOT / "data" / "raw" / "arcep"
-FICHIER_ARCEP = DOSSIER_ARCEP / "2025_QoS_Metropole_data_habitations.csv"
 COLONNES_VIRGULE = ["acess_duration", "bitrate_dl", "bitrate_ul"]
+COLONNES_CASSE = ["situation", "zone"]
+FICHIERS_ARCEP = ["data_habitations", "data_transports", "voix_habitations", "voix_transports"]
 
 
-def charger_arcep(fichier=FICHIER_ARCEP):
+def fichier_arcep(nom="data_habitations", annee=2025, territoire="Metropole"):
+    """Chemin d'un fichier de mesures ARCEP, par exemple 2025_QoS_Metropole_voix_transports.csv."""
+    return DOSSIER_ARCEP / f"{annee}_QoS_{territoire}_{nom}.csv"
+
+
+def charger_arcep(fichier=None):
     """Charge un fichier de mesures QoS de l'ARCEP (campagne « Mon réseau mobile »).
 
     - séparateur ; et encodage cp1252 (le fichier n'est pas en UTF-8) ;
     - suppression des colonnes entièrement vides ;
-    - conversion des nombres écrits avec une virgule décimale ;
-    - casse uniformisée pour la colonne situation (Indoor, Outdoor, Incar) ;
+    - conversion des nombres écrits avec une virgule décimale (si la colonne existe et est du texte) ;
+    - casse uniformisée pour situation et zone ;
     - ajout de la colonne instant (date et heure du début du test).
     """
+    if fichier is None:
+        fichier = fichier_arcep()
     df = pd.read_csv(fichier, sep=";", encoding="cp1252", low_memory=False)
     df = df.dropna(axis=1, how="all")
 
     for col in COLONNES_VIRGULE:
-        df[col] = pd.to_numeric(df[col].str.replace(",", "."), errors="coerce")
+        if col in df.columns and not pd.api.types.is_numeric_dtype(df[col]):
+            df[col] = pd.to_numeric(df[col].str.replace(",", "."), errors="coerce")
 
-    df["situation"] = df["situation"].str.capitalize()
+    for col in COLONNES_CASSE:
+        if col in df.columns:
+            df[col] = df[col].str.capitalize()
+
     df["instant"] = pd.to_datetime(df["date_start"] + " " + df["hour_start"],
                                    format="%d/%m/%Y %H:%M:%S")
     return df
