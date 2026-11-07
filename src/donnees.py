@@ -148,4 +148,6 @@ def harmoniser_arcep(tables):
     tout["operator"] = tout["operator"].replace({"FREE": "Free"})
     tout["terminal"] = tout["terminal"].replace(TERMINAUX)
     tout["heure"] = tout["instant"].dt.hour
+    tout["rsrp"] = tout["rsrp"].where(tout["rsrp"] < 0)    # 0 dBm = valeur de remplissage
+    tout["rsrp_absent"] = tout["rsrp"].isna()               # l'absence de mesure est une information
     return tout.reset_index(drop=True)
