@@ -13,3 +13,5 @@ xgboost
 
 # Notebooks Jupyter dans VS Code
 ipykernel
+
+pyarrow

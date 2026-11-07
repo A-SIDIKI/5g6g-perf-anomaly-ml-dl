@@ -125,3 +125,27 @@ def charger_arcep(fichier=None):
     df["instant"] = pd.to_datetime(df["date_start"] + " " + df["hour_start"],
                                    format="%d/%m/%Y %H:%M:%S")
     return df
+
+TERMINAUX = {
+    "SM-G990B": "Galaxy S21 FE", "SM-G991B": "Galaxy S21",
+    "Samsung Galaxy S22": "Galaxy S22", "Samsung Galaxy Zflip 4": "Galaxy Z Flip4",
+    "Samsung Galaxy S23": "Galaxy S23", "SM-S911B": "Galaxy S23",
+    "SM-F731B": "Galaxy Z Flip5", "SM-S921B": "Galaxy S24",
+}
+PROTOCOLES_COMMUNS = ["WEB", "STREAM", "DOWNLOAD"]
+
+
+def harmoniser_arcep(tables):
+    """Réunit plusieurs années (dictionnaire {année: tableau}) en un seul tableau comparable."""
+    communes = sorted(set.intersection(*(set(df.columns) for df in tables.values())))
+    morceaux = [df[communes].assign(annee=annee) for annee, df in tables.items()]
+    tout = pd.concat(morceaux, ignore_index=True)
+
+    tout = tout[tout["protocole"].isin(PROTOCOLES_COMMUNS)]
+    dl_sans_debit = (tout["protocole"] == "DOWNLOAD") & tout["bitrate_dl"].isna()
+    tout = tout[~dl_sans_debit].copy()
+
+    tout["operator"] = tout["operator"].replace({"FREE": "Free"})
+    tout["terminal"] = tout["terminal"].replace(TERMINAUX)
+    tout["heure"] = tout["instant"].dt.hour
+    return tout.reset_index(drop=True)
