@@ -1,0 +1,4 @@
+,seuil
+logistique,0.41
+forêt,0.45
+xgboost,0.456
