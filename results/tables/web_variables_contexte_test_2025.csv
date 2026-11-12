@@ -1,0 +1,8 @@
+,,precision,rappel,f1,ap,seuil
+base,logistique,0.793,0.564,0.659,0.72,0.41
+base,xgboost,0.775,0.593,0.672,0.7,0.46000000834465027
+prédiction,logistique,0.789,0.676,0.728,0.771,0.39
+prédiction,xgboost,0.786,0.688,0.734,0.79,0.47999998927116394
+diagnostic,logistique,0.769,0.712,0.74,0.796,0.35
+diagnostic,xgboost,0.787,0.688,0.734,0.803,0.44999998807907104
+règle,RSRP,0.724,0.645,0.682,0.499,
