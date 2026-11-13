@@ -23,3 +23,17 @@ def ajouter_contexte(df, delai_max=600):
     total = voisins.transform("sum")
     df["taux_echec_autres"] = ((total - df["echec"]) / (n - 1)).where(n > 1)
     return df
+
+
+def ajouter_precedent(df, colonne, nom, delai_max=600):
+    """Ajoute la valeur de `colonne` au test précédent du même opérateur au même lieu."""
+    df = df.copy()
+    df["lat"] = df["latitude_start"].round(3)
+    df["lon"] = df["longitude_start"].round(3)
+    df = df.sort_values(["operator", "lat", "lon", "instant"])
+    groupes = df.groupby(["operator", "lat", "lon"])
+    df[nom] = groupes[colonne].shift(1)
+    delai = (df["instant"] - groupes["instant"].shift(1)).dt.total_seconds()
+    df.loc[delai > delai_max, nom] = np.nan
+    df[nom + "_absent"] = df[nom].isna()
+    return df.sort_index()
