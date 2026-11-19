@@ -71,3 +71,54 @@ def predire(modele, X, echelle=100):
     modele.eval()
     with torch.no_grad():
         return modele(torch.tensor(X)).squeeze(1).numpy() * echelle
+
+
+# ---------------------------------------------------------------- modèles séquentiels
+class ReseauLSTM(nn.Module):
+    def __init__(self, n_variables, n_cachees=32):
+        super().__init__()
+        self.lstm = nn.LSTM(n_variables, n_cachees, batch_first=True)
+        self.sortie = nn.Linear(n_cachees, 1)
+
+    def forward(self, x):                        # x : (lot, W, variables)
+        etats, _ = self.lstm(x)                  # (lot, W, n_cachees)
+        return self.sortie(etats[:, -1, :])      # état de la dernière seconde
+
+
+class ReseauGRU(nn.Module):
+    def __init__(self, n_variables, n_cachees=32):
+        super().__init__()
+        self.gru = nn.GRU(n_variables, n_cachees, batch_first=True)
+        self.sortie = nn.Linear(n_cachees, 1)
+
+    def forward(self, x):
+        etats, _ = self.gru(x)
+        return self.sortie(etats[:, -1, :])
+
+
+class ReseauCNNLSTM(nn.Module):
+    """Convolution d'abord (motifs locaux), puis LSTM (enchaînement des motifs)."""
+    def __init__(self, n_variables, n_filtres=32, n_cachees=32):
+        super().__init__()
+        self.conv = nn.Conv1d(n_variables, n_filtres, kernel_size=3, padding=1)
+        self.lstm = nn.LSTM(n_filtres, n_cachees, batch_first=True)
+        self.sortie = nn.Linear(n_cachees, 1)
+
+    def forward(self, x):
+        motifs = torch.relu(self.conv(x.permute(0, 2, 1)))   # (lot, filtres, W)
+        etats, _ = self.lstm(motifs.permute(0, 2, 1))        # (lot, W, n_cachees)
+        return self.sortie(etats[:, -1, :])
+
+
+class ReseauLSTMCNN(nn.Module):
+    """LSTM d'abord (un état par seconde), puis convolution sur ces états et pooling."""
+    def __init__(self, n_variables, n_cachees=32, n_filtres=32):
+        super().__init__()
+        self.lstm = nn.LSTM(n_variables, n_cachees, batch_first=True)
+        self.conv = nn.Conv1d(n_cachees, n_filtres, kernel_size=3, padding=1)
+        self.sortie = nn.Linear(n_filtres, 1)
+
+    def forward(self, x):
+        etats, _ = self.lstm(x)                                 # (lot, W, n_cachees)
+        motifs = torch.relu(self.conv(etats.permute(0, 2, 1)))  # (lot, filtres, W)
+        return self.sortie(motifs.max(dim=2).values)            # pooling : max sur le temps
